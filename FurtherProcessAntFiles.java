@@ -48,7 +48,6 @@ public class FurtherProcessAntFiles {
             } catch (IOException e) {
             System.err.println("An error occurred while reading from the file: " + e.getMessage());
             }
-        
             
         String name;
         String year; 
@@ -118,8 +117,6 @@ public class FurtherProcessAntFiles {
         //ADDS NEW ENTRIES TO THE TEX FILE
             // Write to file
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
-                //writer.write(contentToWrite);
-                //writer.append(contentToWrite + "\n");
                 for (Contact c : newContacts) {
                     writer.append(c.toString());
                     writer.newLine();
@@ -150,16 +147,16 @@ class Contact { //implements Comparable<Contact> //use this to make objects
     }
     public String toString() {
         String result; 
-        result = name + ", " + year + ", " + email; //add new line character? 
+        result = name + ", " + year + ", " + email; 
         return result; 
     }
-    public String getName() { //priority is from 1-anything
+    public String getName() { 
         return name; 
     }
     public String getYear() {
         return year; 
     }
-    public String getEmail() { //complexity is scaled 1-10
+    public String getEmail() { 
         return email; 
     }
 }
