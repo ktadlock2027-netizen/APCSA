@@ -10,6 +10,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner; 
+import javax.sound.sampled.*;
+import java.io.File;
+import java.util.*;
+
 //import java.util.ArrayList; 
 //import java.util.Collections; 
 
@@ -48,7 +52,7 @@ public class OregonTrail {
         String characterPath; //shows the program which character file to read from
         //loop it so that a user has to enter one of the specific keys
         while (true){
-            character = scan.next(); 
+            character = scan.next(); //reads to a different text file for each character
             if (character.equals("b")) {
                 characterPath = "Introduction/banker.txt"; 
                 System.out.println(banker1);
@@ -76,16 +80,23 @@ public class OregonTrail {
         //BEGIN THE TRAIL -----------------------------------------------------------------------------
         System.out.println("\n" + "You are now ready to begin the trail!" + "\n" +
                 "In which month would you like to depart?" + "\n" +
-                "Type 'a' for April, 'm' for May, and 'J' for June.");
+                "Type 'a' for April, 'm' for May, and 'j' for June.");
         String month; 
-        month = scan.next(); 
         String monthPath; //shows the program which month file to read from
-        if (month.equals("a")){ 
-            monthPath = "TrailStart/april.txt"; 
-        } else if (month.equals("m")) {
-            monthPath = "TrailStart/may.txt";
-        } else {
-            monthPath = "TrailStart/june.txt";
+        while (true) { //same loop and same file path system as before
+            month = scan.next(); 
+            if (month.equals("a")){ 
+                monthPath = "TrailStart/april.txt"; 
+                break; 
+            } else if (month.equals("m")) {
+                monthPath = "TrailStart/may.txt";
+                break; 
+            } else if (month.equals("j")) {
+                monthPath = "TrailStart/june.txt";
+                break; 
+            } else {
+                System.out.println("Wrong key entered. Please select one of the options.");
+            }
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(monthPath))) {
             String line;
@@ -120,6 +131,16 @@ public class OregonTrail {
         }
         //KANSAS RIVER CROSSING ---------------------------------------------------------------------
         System.out.println();
+        SoundClass sound1 = new SoundClass();
+        sound1.filePath = "Kansas River Crossing/rippling-water-1.wav";
+        sound1.createTimeForSound();
+        try {
+            Thread.sleep(5000);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }        
+        SoundClass.clip.stop();
         try (BufferedReader reader = new BufferedReader(new FileReader("Kansas River Crossing/kansasRiverWelcome.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -168,7 +189,15 @@ public class OregonTrail {
         //END KANSAS RIVER PORTION -------------------------------------------------------------------------
         //BEGIN TREK TO CHIMNEY ROCK AND WYOMING -----------------------------------------------------------
         System.out.println();
-        try (BufferedReader reader = new BufferedReader(new FileReader("RoadToWyoming/intro.txt"))) {
+        sound1.filePath = "RoadToWyoming/wagonSound.wav";
+        sound1.createTimeForSound();
+        try {
+            Thread.sleep(5000);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }        
+        SoundClass.clip.stop();        try (BufferedReader reader = new BufferedReader(new FileReader("RoadToWyoming/intro.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
             System.out.println(line);
@@ -246,7 +275,7 @@ public class OregonTrail {
         String choiceShortcut; 
         while (true) {
             choiceShortcut = scan.next();
-            if (choiceShortcut.equals("a") && month.equals("j")) {
+            if (choiceShortcut.equals("a") && month.equals("j")) { //means choices earlier on still have consequence
                 shortcutPath = "PostLaramieChoices/shortcutJune.txt"; 
                 break; 
             } else if (choiceShortcut.equals("a")) {
@@ -293,17 +322,66 @@ public class OregonTrail {
                System.out.println("You made it across the Columbia River! This was the final trial before Oregon." + "\n" 
                + "You are now in Oregon and can begin your new life on the West Coast. Congratulations!" + "\n" 
                + "YOU WIN");
-               break; 
+               System.exit(0); 
            } else {
                 System.out.println("Wrong key entered. Please select one of the options.");
             }
         }
-        
-        
-        
-        
-        
-        //-------------------------------------------------------------------------------------
+        //END OF GAME -------------------------------------------------------------------------------------
+    }
+}
+
+class PlaySound {
+    public static void main(String[] args) {
+        //create sound object
+        SoundClass chaching = new SoundClass();
+        //create a time slot for the sound to play
+        chaching.createTimeForSound();
+    }
+}
+class SoundClass{
+    private static Clip currentClip; 
+    public static Clip clip; 
+    //a file path same a text files - so inside the project
+    //you should find your own wav sound file (millions out there) 
+    String filePath; // Replace with your file path; sounds/75235__creek23__cha-ching.wav
+    //syntax for playing sounds - do not change this!
+    public static void playSound(String filePath) {
+        try {
+            if (currentClip != null && currentClip.isRunning()) {
+                currentClip.stop();
+                currentClip.close();
+            }
+            File soundFile = new File(filePath);
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+            clip = AudioSystem.getClip();
+            clip.open(audioIn);
+            clip.setFramePosition(0);
+            System.out.println("Playing the sound");
+            clip.start();
+            // Keep the program running until the sound finishes playing
+            clip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                clip.close();
+                }
+            });
+        } 
+        catch (UnsupportedAudioFileException | IOException |
+        LineUnavailableException e) {
+        e.printStackTrace();
+        }
+    }
+    //you must create some time for the sound, or it will be played in 0 seconds
+    public void createTimeForSound() {
+        TimerTask task = new TimerTask() {
+            public void run() {
+                playSound(filePath);
+            }
+        };
+    Timer timer = new Timer("Timer");
+    //1000 miliseconds, aka 1 second. Your clip may require more time.
+    long delay = 1000l;
+    timer.schedule(task, delay);
     }
 }
 
@@ -319,6 +397,7 @@ class Character {
         spareParts = spareParts1;
         food = food1;
     }
+    //getters and setters
     public int getOxen() {
         return oxen; 
     }
@@ -338,7 +417,8 @@ class Character {
     }
 } 
 
-class Banker extends Character { 
+
+class Banker extends Character { //these classes alter some of the object characteristics
     public Banker (int oxen1, int money1, int spareParts1, int food1) {
         super (oxen1, money1, spareParts1, food1); 
     }
